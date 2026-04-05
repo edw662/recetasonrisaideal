@@ -1,228 +1,667 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CLASIFICADOR REMASEP</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clínica Dental Sonrisa Ideal</title>
+  <meta name="description" content="Clínica Dental Sonrisa Ideal — Cuidamos tu sonrisa con tecnología de vanguardia y atención personalizada. Agenda tu cita hoy." />
+  <meta name="keywords" content="clínica dental, dentista, odontología, sonrisa ideal, blanqueamiento, ortodoncia, implantes" />
+  <meta property="og:title" content="Clínica Dental Sonrisa Ideal" />
+  <meta property="og:description" content="Tu sonrisa en las mejores manos. Servicios dentales integrales con tecnología de vanguardia." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
 
-<!-- Lectura de CSV/Excel -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<style>
-  :root{
-    --bg:#fff3e0; --card:#fff8f0; --ink:#1a1a1a; --muted:#78716c; --accent:#22c55e; --border:#fcd9b0;
-  }
-  body{background:var(--bg); color:var(--ink); font-family:system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif; margin:0}
-  .wrap{max-width:1100px; margin:24px auto; padding:0 16px}
-  h1{margin:0 0 14px; font-size:clamp(20px,3vw,28px)}
-  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:12px}
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-  .row.space{justify-content:space-between}
-  button{background:var(--accent); color:#052e16; border:none; padding:9px 14px; border-radius:10px; font-weight:800; cursor:pointer}
-  button.secondary{background:#fde8c8; color:var(--ink); border:1px solid #fcd9b0}
-  button.warn{background:#ef4444; color:white}
-  button:disabled{opacity:.55; cursor:not-allowed}
-  .hint{color:var(--muted); font-size:13px}
-  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace; background:#fde8c8; border:1px solid var(--border); border-radius:6px; padding:1px 6px}
-  textarea{width:100%; min-height:110px; background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:10px; padding:10px}
-  table{width:100%; border-collapse:collapse; margin-top:8px; font-variant-numeric:tabular-nums}
-  th,td{border-bottom:1px solid var(--border); padding:8px; text-align:center}
-  th{background:#fde8c8; position:sticky; top:0}
-  .left{text-align:left}
-  .tot{font-weight:800}
-  #downloadWrap{margin-top:16px; display:none}
-</style>
+    :root {
+      --white: #ffffff;
+      --off-white: #f8fafc;
+      --light: #f0f9ff;
+      --blue-50: #eff6ff;
+      --blue-100: #dbeafe;
+      --blue-400: #60a5fa;
+      --blue-500: #3b82f6;
+      --blue-600: #2563eb;
+      --blue-700: #1d4ed8;
+      --blue-800: #1e40af;
+      --teal-400: #2dd4bf;
+      --teal-500: #14b8a6;
+      --teal-600: #0d9488;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+      --shadow: 0 4px 24px rgba(0,0,0,.08);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--gray-800);
+      background: var(--white);
+      line-height: 1.6;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px;
+      height: 70px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.15rem; color: var(--gray-900);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--teal-500); }
+    .nav-logo svg { width: 34px; height: 34px; }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--gray-600); font-size: .9rem;
+      font-weight: 500; transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--teal-600); }
+    .nav-cta {
+      background: var(--teal-500); color: white; border: none;
+      padding: 10px 22px; border-radius: 50px; font-weight: 600;
+      font-size: .9rem; cursor: pointer; text-decoration: none;
+      transition: background .2s, transform .15s;
+    }
+    .nav-cta:hover { background: var(--teal-600); transform: translateY(-1px); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--gray-700); border-radius: 2px; transition: all .3s; }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 60%, #f8fafc 100%);
+      display: flex; align-items: center;
+      padding: 100px 24px 60px;
+    }
+    .hero-inner {
+      max-width: 1100px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--teal-500); color: white;
+      padding: 6px 14px; border-radius: 50px;
+      font-size: .78rem; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; margin-bottom: 20px;
+    }
+    .hero-badge::before { content: '✦'; font-size: 10px; }
+    .hero h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 4.5vw, 3.4rem);
+      color: var(--gray-900); line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: normal; color: var(--teal-600); }
+    .hero p {
+      color: var(--gray-600); font-size: 1.05rem;
+      margin-bottom: 36px; max-width: 480px;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--teal-500), var(--blue-600));
+      color: white; border: none; padding: 14px 30px;
+      border-radius: 50px; font-weight: 700; font-size: 1rem;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 8px 24px rgba(14,165,133,.35);
+      transition: transform .2s, box-shadow .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(14,165,133,.4); }
+    .btn-outline {
+      background: transparent; color: var(--gray-700);
+      border: 2px solid var(--gray-300); padding: 13px 28px;
+      border-radius: 50px; font-weight: 600; font-size: 1rem;
+      cursor: pointer; text-decoration: none;
+      transition: border-color .2s, color .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-outline:hover { border-color: var(--teal-500); color: var(--teal-600); }
+    .hero-stats {
+      display: flex; gap: 28px; margin-top: 44px; flex-wrap: wrap;
+    }
+    .stat { }
+    .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--gray-900); line-height: 1; }
+    .stat-label { font-size: .8rem; color: var(--gray-500); margin-top: 2px; }
+    .hero-img {
+      position: relative;
+    }
+    .hero-card {
+      background: white; border-radius: var(--radius);
+      box-shadow: var(--shadow-lg); padding: 32px;
+      text-align: center;
+    }
+    .hero-card-icon { font-size: 4rem; margin-bottom: 12px; line-height: 1; }
+    .hero-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .hero-card p { font-size: .9rem; color: var(--gray-500); }
+    .floating-badge {
+      position: absolute; background: white;
+      border-radius: 12px; padding: 10px 16px;
+      box-shadow: var(--shadow); font-size: .82rem; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .floating-badge.top-right { top: -16px; right: -16px; }
+    .floating-badge.bottom-left { bottom: -16px; left: -16px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(1.3)} }
+
+    /* ─── SECTION COMMONS ─── */
+    section { padding: 90px 24px; }
+    .container { max-width: 1100px; margin: 0 auto; width: 100%; }
+    .section-label {
+      display: inline-block;
+      background: var(--blue-50); color: var(--blue-700);
+      padding: 4px 14px; border-radius: 50px;
+      font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      color: var(--gray-900); line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .section-sub { color: var(--gray-500); font-size: 1rem; max-width: 560px; }
+    .section-header { margin-bottom: 52px; }
+    .section-header.center { text-align: center; }
+    .section-header.center .section-sub { margin: 0 auto; }
+
+    /* ─── SERVICES ─── */
+    #servicios { background: var(--off-white); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .service-card {
+      background: white; border-radius: var(--radius);
+      padding: 28px 24px; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .service-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .service-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 16px;
+    }
+    .service-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .service-card p { font-size: .88rem; color: var(--gray-500); line-height: 1.6; }
+
+    /* ─── WHY US ─── */
+    #nosotros {
+      background: linear-gradient(135deg, var(--gray-900) 0%, #0f2942 100%);
+      color: white;
+    }
+    #nosotros .section-label { background: rgba(255,255,255,.12); color: var(--teal-400); }
+    #nosotros .section-title { color: white; }
+    #nosotros .section-sub { color: rgba(255,255,255,.6); }
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .why-features { display: flex; flex-direction: column; gap: 24px; margin-top: 32px; }
+    .why-feature { display: flex; gap: 16px; }
+    .why-icon {
+      flex-shrink: 0; width: 44px; height: 44px;
+      background: rgba(45,212,191,.15); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .why-text h4 { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .why-text p { font-size: .88rem; color: rgba(255,255,255,.6); }
+    .why-visual {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .why-stat-card {
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--radius-sm); padding: 24px 20px; text-align: center;
+    }
+    .why-stat-card:first-child { grid-column: span 2; }
+    .why-stat-num { font-size: 2.4rem; font-weight: 800; color: var(--teal-400); line-height: 1; }
+    .why-stat-label { font-size: .82rem; color: rgba(255,255,255,.6); margin-top: 6px; }
+
+    /* ─── TESTIMONIALS ─── */
+    #testimonios { background: var(--blue-50); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .testimonial-card {
+      background: white; border-radius: var(--radius);
+      padding: 28px 24px; box-shadow: var(--shadow-sm);
+    }
+    .stars { color: #f59e0b; font-size: 1rem; letter-spacing: 2px; margin-bottom: 14px; }
+    .testimonial-text { font-size: .95rem; color: var(--gray-600); line-height: 1.65; margin-bottom: 20px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal-400), var(--blue-500));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-size: .95rem;
+    }
+    .author-name { font-weight: 700; font-size: .9rem; color: var(--gray-900); }
+    .author-label { font-size: .78rem; color: var(--gray-400); }
+
+    /* ─── TEAM ─── */
+    #equipo { background: white; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+    .team-card {
+      background: var(--off-white); border-radius: var(--radius);
+      padding: 28px 24px; text-align: center;
+      border: 1px solid var(--gray-200);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .team-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .team-avatar {
+      width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 14px;
+      background: linear-gradient(135deg, var(--teal-400), var(--blue-500));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+    .team-name { font-weight: 700; font-size: 1rem; color: var(--gray-900); }
+    .team-role { font-size: .83rem; color: var(--teal-600); font-weight: 600; margin: 4px 0 8px; }
+    .team-desc { font-size: .83rem; color: var(--gray-500); }
+
+    /* ─── CONTACT / CTA ─── */
+    #contacto {
+      background: linear-gradient(135deg, var(--teal-500), var(--blue-600));
+      color: white; text-align: center;
+    }
+    #contacto .section-title { color: white; font-size: clamp(1.7rem, 3.5vw, 2.5rem); }
+    #contacto p { color: rgba(255,255,255,.8); font-size: 1.05rem; max-width: 520px; margin: 0 auto 36px; }
+    .contact-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 52px; }
+    .btn-white {
+      background: white; color: var(--teal-700);
+      border: none; padding: 14px 30px; border-radius: 50px;
+      font-weight: 700; font-size: 1rem; cursor: pointer;
+      text-decoration: none; transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+    .btn-outline-white {
+      background: transparent; color: white;
+      border: 2px solid rgba(255,255,255,.6); padding: 13px 28px;
+      border-radius: 50px; font-weight: 600; font-size: 1rem;
+      cursor: pointer; text-decoration: none;
+      transition: border-color .2s;
+    }
+    .btn-outline-white:hover { border-color: white; }
+    .contact-info {
+      display: flex; gap: 36px; justify-content: center; flex-wrap: wrap;
+    }
+    .contact-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .contact-item-icon { font-size: 1.3rem; }
+    .contact-item-label { font-size: .75rem; color: rgba(255,255,255,.6); letter-spacing: .04em; text-transform: uppercase; }
+    .contact-item-value { font-size: .95rem; font-weight: 600; color: white; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--gray-900); color: rgba(255,255,255,.5);
+      padding: 32px 24px; text-align: center; font-size: .85rem;
+    }
+    footer a { color: var(--teal-400); text-decoration: none; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+      .hero-img { display: none; }
+      .why-grid { grid-template-columns: 1fr; gap: 40px; }
+      .hero-stats { gap: 20px; }
+    }
+    @media (max-width: 520px) {
+      section { padding: 64px 20px; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🧮 CLASIFICADOR REMASEP</h1>
 
-  <div class="card">
-    <div class="row space" style="align-items:baseline">
-      <strong>PEGA LA INFORMACIÓN A CLASIFICAR</strong>
-      <div class="row">
-        <button id="btnClassify">Clasificar</button>
-        <button id="btnClearPaste" class="warn">Borrar</button>
-        <!-- <input id="fileInput" type="file" accept=".csv,.xlsx,.xls" /> -->
+<!-- ─── NAV ─── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="18" fill="#0d9488"/>
+      <path d="M12 10c0-2.2 1.8-4 4-4s4 1.8 4 4c2.2 0 4 1.8 4 4v2c0 6-4 12-4 12s-4-6-4-12v-2c-2.2 0-4-1.8-4-4z" fill="white" opacity=".9"/>
+    </svg>
+    Sonrisa<span>Ideal</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#nosotros">Nosotros</a></li>
+    <li><a href="#testimonios">Testimonios</a></li>
+    <li><a href="#equipo">Equipo</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <a class="nav-cta" href="#contacto">Agendar Cita</a>
+  <button class="hamburger" aria-label="Menú" onclick="document.querySelector('.nav-links').style.display = document.querySelector('.nav-links').style.display === 'flex' ? 'none' : 'flex'">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" id="inicio">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">Atención dental de excelencia</div>
+      <h1>Tu <em>Sonrisa Ideal</em> comienza aquí</h1>
+      <p>Cuidamos tu salud bucal con tecnología de vanguardia y un equipo de especialistas comprometidos con tu bienestar. Primera consulta sin costo.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#contacto">
+          📅 Agendar cita gratis
+        </a>
+        <a class="btn-outline" href="#servicios">
+          Ver servicios
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num">+5,000</div>
+          <div class="stat-label">Pacientes atendidos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">15+</div>
+          <div class="stat-label">Años de experiencia</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">98%</div>
+          <div class="stat-label">Satisfacción</div>
+        </div>
       </div>
     </div>
-    <textarea id="pasteArea" placeholder="Pega aquí CSV con encabezados (Nombre,Género/Sexo,Edad,Embarazada,Migrante,Cantidad)."></textarea>
-  </div>
 
-  <div id="tableCard" class="card" style="display:none">
-    <div class="row space" style="align-items:baseline">
-      <strong>Resultado</strong>
-      <div class="hint" id="meta"></div>
+    <div class="hero-img">
+      <div class="hero-card">
+        <div class="hero-card-icon">🦷</div>
+        <h3>Clínica Dental Sonrisa Ideal</h3>
+        <p>Tecnología digital · Atención personalizada · Ambiente amigable</p>
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+          <div style="background:#f0fdfa; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; text-align:left;">
+            <span style="font-size:1.4rem;">😁</span>
+            <div>
+              <div style="font-weight:700; font-size:.88rem; color:#0f172a;">Blanqueamiento Dental</div>
+              <div style="font-size:.78rem; color:#64748b;">Resultados visibles en 1 sesión</div>
+            </div>
+          </div>
+          <div style="background:#eff6ff; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; text-align:left;">
+            <span style="font-size:1.4rem;">🦷</span>
+            <div>
+              <div style="font-weight:700; font-size:.88rem; color:#0f172a;">Implantes Dentales</div>
+              <div style="font-size:.78rem; color:#64748b;">Solución permanente y natural</div>
+            </div>
+          </div>
+          <div style="background:#fdf4ff; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; text-align:left;">
+            <span style="font-size:1.4rem;">📐</span>
+            <div>
+              <div style="font-weight:700; font-size:.88rem; color:#0f172a;">Ortodoncia Invisible</div>
+              <div style="font-size:.78rem; color:#64748b;">Sin brackets, cómoda y discreta</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="floating-badge top-right">
+        <div class="dot"></div>
+        Atendiendo ahora
+      </div>
+      <div class="floating-badge bottom-left">
+        ⭐ 4.9 / 5.0 en Google
+      </div>
     </div>
-    <div id="tableWrap"></div>
+  </div>
+</section>
 
-    <!-- ⬇️ Botón de descarga DEBAJO del resultado -->
-    <div id="downloadWrap">
-      <button id="btnDownload" class="secondary">Descargar Excel</button>
+<!-- ─── SERVICES ─── -->
+<section id="servicios">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-label">Nuestros Servicios</div>
+      <h2 class="section-title">Todo lo que tu sonrisa necesita</h2>
+      <p class="section-sub">Ofrecemos una gama completa de tratamientos dentales con la más alta tecnología y profesionalismo.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon" style="background:#f0fdfa;">😁</div>
+        <h3>Blanqueamiento Dental</h3>
+        <p>Recupera la blancura natural de tus dientes con nuestros tratamientos seguros y efectivos en consultorio o para casa.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon" style="background:#eff6ff;">🦷</div>
+        <h3>Implantes Dentales</h3>
+        <p>Reemplaza dientes perdidos con implantes de titanio de alta resistencia. Resultado natural y duradero de por vida.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon" style="background:#fdf4ff;">📐</div>
+        <h3>Ortodoncia</h3>
+        <p>Brackets metálicos, cerámicos y alineadores invisibles para una sonrisa perfectamente alineada a tu medida.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon" style="background:#fff7ed;">🩺</div>
+        <h3>Limpieza Dental</h3>
+        <p>Profilaxis profesional, eliminación de sarro y pulido para mantener tus encías y dientes en perfecto estado.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon" style="background:#f0fdf4;">🔬</div>
+        <h3>Odontología Estética</h3>
+        <p>Carillas de porcelana, resinas dentales y diseño de sonrisa digital para transformar tu imagen completamente.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon" style="background:#fff1f2;">🧒</div>
+        <h3>Odontopediatría</h3>
+        <p>Atención especializada y amigable para niños desde la primera infancia, en un ambiente seguro y divertido.</p>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<script>
-(function(){
-  // const fileInput = document.getElementById('fileInput'); // ELIMINADO
-  const pasteArea = document.getElementById('pasteArea');
-  const btnClassify = document.getElementById('btnClassify');
-  const btnClearPaste = document.getElementById('btnClearPaste');
-  const tableCard = document.getElementById('tableCard');
-  const tableWrap = document.getElementById('tableWrap');
-  const meta = document.getElementById('meta');
-  const btnDownload = document.getElementById('btnDownload');
-  const downloadWrap = document.getElementById('downloadWrap');
+<!-- ─── WHY US ─── -->
+<section id="nosotros">
+  <div class="container">
+    <div class="why-grid">
+      <div>
+        <div class="section-label">¿Por qué elegirnos?</div>
+        <h2 class="section-title">Tu bienestar es nuestra prioridad</h2>
+        <p class="section-sub" style="color:rgba(255,255,255,.6)">En Sonrisa Ideal combinamos tecnología de vanguardia con atención humana y personalizada.</p>
+        <div class="why-features">
+          <div class="why-feature">
+            <div class="why-icon">🏥</div>
+            <div class="why-text">
+              <h4>Equipos de última generación</h4>
+              <p>Radiografías digitales, escáner 3D, láser dental y sistemas CAD/CAM para resultados precisos.</p>
+            </div>
+          </div>
+          <div class="why-feature">
+            <div class="why-icon">👨‍⚕️</div>
+            <div class="why-text">
+              <h4>Especialistas certificados</h4>
+              <p>Nuestro equipo cuenta con posgrados y certificaciones nacionales e internacionales.</p>
+            </div>
+          </div>
+          <div class="why-feature">
+            <div class="why-icon">💊</div>
+            <div class="why-text">
+              <h4>Atención sin dolor</h4>
+              <p>Técnicas modernas de anestesia y sedación consciente para que tu visita sea totalmente cómoda.</p>
+            </div>
+          </div>
+          <div class="why-feature">
+            <div class="why-icon">💳</div>
+            <div class="why-text">
+              <h4>Financiamiento flexible</h4>
+              <p>Planes de pago a meses sin intereses y aceptamos múltiples métodos de pago.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="why-visual">
+        <div class="why-stat-card">
+          <div class="why-stat-num">+5,000</div>
+          <div class="why-stat-label">Pacientes satisfechos</div>
+        </div>
+        <div class="why-stat-card">
+          <div class="why-stat-num">15+</div>
+          <div class="why-stat-label">Años de experiencia</div>
+        </div>
+        <div class="why-stat-card">
+          <div class="why-stat-num">98%</div>
+          <div class="why-stat-label">Tasa de éxito</div>
+        </div>
+        <div class="why-stat-card">
+          <div class="why-stat-num">8</div>
+          <div class="why-stat-label">Especialistas</div>
+        </div>
+        <div class="why-stat-card">
+          <div class="why-stat-num">4.9⭐</div>
+          <div class="why-stat-label">Calificación Google</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  let lastTable = [];
+<!-- ─── TESTIMONIALS ─── -->
+<section id="testimonios">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-label">Testimonios</div>
+      <h2 class="section-title">Lo que dicen nuestros pacientes</h2>
+      <p class="section-sub">Más de 5,000 sonrisas transformadas hablan por nosotros.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"Me pusieron implantes y el resultado es increíble, no se nota nada. El equipo fue muy profesional durante todo el proceso y me sentí muy cómoda."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MR</div>
+          <div>
+            <div class="author-name">María Rodríguez</div>
+            <div class="author-label">Paciente — Implantes dentales</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"Me hicieron el blanqueamiento en una sola sesión y quedé fascinado. La diferencia es enorme y el precio muy accesible comparado con otros lugares."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">CL</div>
+          <div>
+            <div class="author-name">Carlos López</div>
+            <div class="author-label">Paciente — Blanqueamiento dental</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"Mi hija tenía mucho miedo al dentista y aquí la trataron con tanta paciencia que ahora pide ir a sus citas. Excelente atención pediátrica."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">AT</div>
+          <div>
+            <div class="author-name">Ana Torres</div>
+            <div class="author-label">Mamá de paciente — Odontopediatría</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  const RANGOS = [
-    { nombre:"Menos de 1 año - 1 año", min:0, max:1 },
-    { nombre:"2 años", min:2, max:2 },
-    { nombre:"3 años", min:3, max:3 },
-    { nombre:"4 años", min:4, max:4 },
-    { nombre:"5 años", min:5, max:5 },
-    { nombre:"6 años", min:6, max:6 },
-    { nombre:"7 años", min:7, max:7 },
-    { nombre:"8-9 años", min:8, max:9 },
-    { nombre:"10-14 años", min:10, max:14 },
-    { nombre:"15-19 años", min:15, max:19 },
-    { nombre:"20-24 años", min:20, max:24 },
-    { nombre:"25-34 años", min:25, max:34 },
-    { nombre:"35-44 años", min:35, max:44 },
-    { nombre:"45-59 años", min:45, max:59 },
-    { nombre:"60-64 años", min:60, max:64 },
-    { nombre:"65-74 años", min:65, max:74 },
-    { nombre:"75 y más años", min:75, max:200 }
-  ];
+<!-- ─── TEAM ─── -->
+<section id="equipo">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-label">Nuestro Equipo</div>
+      <h2 class="section-title">Especialistas a tu servicio</h2>
+      <p class="section-sub">Profesionales con pasión por la odontología y compromiso con tu salud.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">👩‍⚕️</div>
+        <div class="team-name">Dra. Laura Méndez</div>
+        <div class="team-role">Directora — Implantología</div>
+        <div class="team-desc">15 años de experiencia. Certificada por la Academia Mexicana de Implantología.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">👨‍⚕️</div>
+        <div class="team-name">Dr. Roberto Silva</div>
+        <div class="team-role">Ortodoncista</div>
+        <div class="team-desc">Especialista en ortodoncia invisible. Posgrado en la UNAM.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">👩‍⚕️</div>
+        <div class="team-name">Dra. Sofía Herrera</div>
+        <div class="team-role">Odontopediatra</div>
+        <div class="team-desc">Experta en atención a niños y adolescentes. Ambiente 100% amigable.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">👨‍⚕️</div>
+        <div class="team-name">Dr. Miguel Vargas</div>
+        <div class="team-role">Estética Dental</div>
+        <div class="team-desc">Diseño de sonrisa digital. Especialista en carillas y rehabilitación oral.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  const stripAccents = s => String(s??'').normalize('NFD').replace(/\p{Diacritic}/gu,'');
-  const norm = s => stripAccents(String(s??'').trim().toLowerCase());
-  const toNum = v => {
-    if (v===null || v===undefined || v==='') return NaN;
-    const n = Number(String(v).replace(/[^\d.-]/g,''));
-    return isNaN(n) ? NaN : n;
-  };
-  const yes = v => {
-    const x = stripAccents(String(v??'').trim().toUpperCase());
-    return x==='SI' || x==='S';
-  };
-  const isMale = v => ["hombre","masculino","male","m"].includes(norm(v));
-  const isFemale = v => ["mujer","femenino","female","f"].includes(norm(v));
-  const findRange = edad => {
-    for (const r of RANGOS) if (edad>=r.min && edad<=r.max) return r.nombre;
-    return null;
-  };
+<!-- ─── CTA / CONTACT ─── -->
+<section id="contacto">
+  <div class="container">
+    <div class="section-label" style="background:rgba(255,255,255,.2); color:white;">Agenda tu cita</div>
+    <h2 class="section-title">¿Listo para transformar tu sonrisa?</h2>
+    <p>Primera consulta de valoración sin costo. Contáctanos hoy y da el primer paso hacia la sonrisa que siempre quisiste.</p>
+    <div class="contact-actions">
+      <a class="btn-white" href="tel:+525500000000">📞 Llámanos ahora</a>
+      <a class="btn-outline-white" href="https://wa.me/525500000000" target="_blank" rel="noopener">💬 WhatsApp</a>
+    </div>
+    <div class="contact-info">
+      <div class="contact-item">
+        <span class="contact-item-icon">📍</span>
+        <span class="contact-item-label">Dirección</span>
+        <span class="contact-item-value">Actualizar con tu dirección</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-item-icon">📞</span>
+        <span class="contact-item-label">Teléfono</span>
+        <span class="contact-item-value">Actualizar con tu número</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-item-icon">⏰</span>
+        <span class="contact-item-label">Horario</span>
+        <span class="contact-item-value">Lun–Vie 9:00–19:00 · Sáb 9:00–14:00</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-item-icon">✉️</span>
+        <span class="contact-item-label">Email</span>
+        <span class="contact-item-value">Actualizar con tu email</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-  btnClearPaste.addEventListener('click', ()=>{
-    pasteArea.value = "";
-    tableCard.style.display = 'none';
-    tableWrap.innerHTML = "";
-    downloadWrap.style.display = 'none';
-    meta.textContent = "";
-    // if (fileInput) fileInput.value = ""; // ELIMINADO
-  });
+<!-- ─── FOOTER ─── -->
+<footer>
+  <p>© 2025 Clínica Dental Sonrisa Ideal · Todos los derechos reservados</p>
+  <p style="margin-top:6px;"><a href="#inicio">Inicio</a> · <a href="#servicios">Servicios</a> · <a href="#contacto">Contacto</a></p>
+</footer>
 
-  btnClassify.addEventListener('click', async ()=>{
-    let rows = [];
-    // if (fileInput && fileInput.files.length){ ... } // ELIMINADO
-    // Solo se permite el pegado manual
-    const text = pasteArea.value.trim();
-    const res = Papa.parse(text, {header:true, skipEmptyLines:true});
-    rows = res.data;
-    meta.textContent = `Fuente: Pegado manual (${rows.length} filas)`;
-
-    rows = rows.map(r=>{
-      const o={};
-      for (const [k,v] of Object.entries(r)){
-        const key = norm(k).replace('género','genero');
-        o[key] = v;
-      }
-      if ('sexo' in o && !('genero' in o)) o.genero = o.sexo;
-      return o;
-    });
-
-    const getCol = (...cands) => cands.find(c => c in (rows[0]||{}));
-    const cGenero = getCol('genero','sexo','sex','género') || 'genero';
-    const cEdad   = getCol('edad','age') || 'edad';
-    const cEmbar  = getCol('embarazada','embarazo','gestante') || 'embarazada';
-    const cMigr   = getCol('migrante','migracion') || 'migrante';
-    const cCant   = getCol('cantidad','cant','n','numero','count') || 'cantidad';
-
-    const tabla = {};
-    let excluidosSinEdad = 0;
-
-    for (const r of rows){
-      const genero = r[cGenero];
-      const edad = toNum(r[cEdad]);
-      const embar = yes(r[cEmbar]);
-      const migr  = yes(r[cMigr]);
-      const cant  = Math.max(1, Math.floor(toNum(r[cCant]) || 1));
-
-      if (Number.isNaN(edad)){ excluidosSinEdad += cant; continue; }
-
-      const rango = findRange(edad);
-      if (!rango) continue;
-      if (!tabla[rango]) tabla[rango] = {Hombres:0, Mujeres:0, Embarazadas:0, Migrantes:0};
-
-      if (isMale(genero))  tabla[rango].Hombres += cant;
-      if (isFemale(genero))tabla[rango].Mujeres += cant;
-      if (embar)           tabla[rango].Embarazadas += cant;
-      if (migr)            tabla[rango].Migrantes  += cant;
-    }
-
-    let out = RANGOS.map(r => ({Rango:r.nombre, ...(tabla[r.nombre]||{Hombres:0,Mujeres:0,Embarazadas:0,Migrantes:0})}))
-                    .filter(x => (x.Hombres + x.Mujeres) > 0);
-
-    const sum = out.reduce((a,c)=>({
-      Hombres:a.Hombres+c.Hombres,
-      Mujeres:a.Mujeres+c.Mujeres,
-      Embarazadas:a.Embarazadas+c.Embarazadas,
-      Migrantes:a.Migrantes+c.Migrantes
-    }), {Hombres:0,Mujeres:0,Embarazadas:0,Migrantes:0});
-
-    out.push({Rango:'Total', ...sum});
-    out.push({Rango:'Total Personas', Hombres: sum.Hombres + sum.Mujeres, Mujeres:'', Embarazadas:'', Migrantes:''});
-    lastTable = out;
-
-    tableCard.style.display = 'block';
-    render(out);
-    downloadWrap.style.display = 'block';
-    meta.textContent += ` • Excluidos sin edad: ${excluidosSinEdad}`;
-  });
-
-  function render(rows){
-    let html = `<table id="tablaClasificacion">
-      <thead><tr>
-        <th class="left">Rango de Edad</th>
-        <th>Hombres</th>
-        <th>Mujeres</th>
-        <th>Embarazadas</th>
-        <th>Migrantes</th>
-      </tr></thead><tbody>`;
-    for (const r of rows){
-      const isTot = r.Rango.startsWith('Total');
-      html += `<tr${isTot?' class="tot"':''}>
-        <td class="left">${r.Rango}</td>
-        <td>${r.Hombres ?? 0}</td>
-        <td>${r.Mujeres ?? 0}</td>
-        <td>${r.Embarazadas ?? 0}</td>
-        <td>${r.Migrantes ?? 0}</td>
-      </tr>`;
-    }
-    html += `</tbody></table>`;
-    tableWrap.innerHTML = html;
-  }
-
-  btnDownload.addEventListener('click', ()=>{
-    const table = document.getElementById('tablaClasificacion');
-    if(!table) return;
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Clasificación" });
-    XLSX.writeFile(wb, "clasificacion_por_rangos.xlsx");
-  });
-})();
-</script>
 </body>
 </html>
