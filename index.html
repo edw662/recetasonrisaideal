@@ -323,6 +323,10 @@
             <input type="checkbox" class="medCheck" value="Azitromicina 500 mg — Tomar 1 comprimido al día por 3 días.">
             <div><div class="med-nombre">Azitromicina 500 mg</div><div class="med-indic">1 al día · 3 días</div></div>
           </label>
+          <label class="med">
+            <input type="checkbox" class="medCheck" value="Ketorolaco trometamol 30 mg — Tomar 1 comprimido cada 8 horas por 5 días.">
+            <div><div class="med-nombre">Ketorolaco trometamol 30 mg</div><div class="med-indic">1 cada 8 horas · 5 días</div></div>
+          </label>
         </div>
 
         <div class="preset-bar">
@@ -433,7 +437,7 @@
 
   function cat(nombre){
     if(nombre.startsWith('Amoxicilina')||nombre.startsWith('Azitromicina')) return 1;
-    if(nombre.startsWith('Paracetamol')||nombre.startsWith('Meloxicam')) return 2;
+    if(nombre.startsWith('Paracetamol')||nombre.startsWith('Meloxicam')||nombre.startsWith('Ketorolaco')) return 2;
     if(nombre.startsWith('Clorhexidina')) return 3;
     return 4;
   }
