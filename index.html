@@ -3,226 +3,527 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CLASIFICADOR REMASEP</title>
-
-<!-- Lectura de CSV/Excel -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
+<title>E-RECETA DENTAL — Clínica Sonrisa Ideal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#fff3e0; --card:#fff8f0; --ink:#1a1a1a; --muted:#78716c; --accent:#22c55e; --border:#fcd9b0;
+    --naranja:#e8650a;
+    --naranja-claro:#f59340;
+    --naranja-suave:#fff5ed;
+    --gris:#f9f7f5;
+    --borde:#ede8e3;
+    --texto:#1a1410;
+    --texto-suave:#7a6e65;
+    --sombra:0 2px 16px rgba(232,101,10,.10);
   }
-  body{background:var(--bg); color:var(--ink); font-family:system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif; margin:0}
-  .wrap{max-width:1100px; margin:24px auto; padding:0 16px}
-  h1{margin:0 0 14px; font-size:clamp(20px,3vw,28px)}
-  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:12px}
-  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-  .row.space{justify-content:space-between}
-  button{background:var(--accent); color:#052e16; border:none; padding:9px 14px; border-radius:10px; font-weight:800; cursor:pointer}
-  button.secondary{background:#fde8c8; color:var(--ink); border:1px solid #fcd9b0}
-  button.warn{background:#ef4444; color:white}
-  button:disabled{opacity:.55; cursor:not-allowed}
-  .hint{color:var(--muted); font-size:13px}
-  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace; background:#fde8c8; border:1px solid var(--border); border-radius:6px; padding:1px 6px}
-  textarea{width:100%; min-height:110px; background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:10px; padding:10px}
-  table{width:100%; border-collapse:collapse; margin-top:8px; font-variant-numeric:tabular-nums}
-  th,td{border-bottom:1px solid var(--border); padding:8px; text-align:center}
-  th{background:#fde8c8; position:sticky; top:0}
-  .left{text-align:left}
-  .tot{font-weight:800}
-  #downloadWrap{margin-top:16px; display:none}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'DM Sans',sans-serif;
+    color:var(--texto);
+    background:#f5f0ec;
+    min-height:100vh;
+  }
+
+  /* ── HEADER ── */
+  header{
+    background:#fff;
+    border-bottom:3px solid var(--naranja);
+    padding:14px 24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 12px rgba(0,0,0,.06);
+  }
+  .header-brand{display:flex;flex-direction:column;gap:2px}
+  .header-title{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(17px,2.5vw,24px);
+    font-weight:800;
+    color:var(--naranja);
+    letter-spacing:.2px;
+  }
+  .header-sub{font-size:12px;color:var(--texto-suave);font-weight:500;letter-spacing:.8px;text-transform:uppercase}
+  .header-logo img{max-height:60px;object-fit:contain}
+
+  /* ── MAIN ── */
+  main{max-width:980px;margin:0 auto;padding:24px 16px 48px}
+
+  /* ── CARDS ── */
+  .card{
+    background:#fff;
+    border:1px solid var(--borde);
+    border-radius:16px;
+    box-shadow:var(--sombra);
+    padding:20px 22px;
+    margin-bottom:16px;
+  }
+  .card-title{
+    font-family:'Playfair Display',serif;
+    font-size:17px;
+    font-weight:700;
+    color:var(--naranja);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card-title::before{
+    content:'';
+    display:block;
+    width:4px;height:18px;
+    background:var(--naranja);
+    border-radius:4px;
+  }
+
+  /* ── FORM FIELDS ── */
+  .controls{display:flex;flex-wrap:wrap;gap:12px}
+  .controls > div{flex:1 1 190px}
+  label.field-label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    color:var(--texto-suave);
+    margin-bottom:6px;
+  }
+  input[type="text"],input[type="date"]{
+    width:100%;
+    padding:10px 14px;
+    border:1.5px solid var(--borde);
+    border-radius:10px;
+    font-size:14px;
+    font-family:'DM Sans',sans-serif;
+    outline:none;
+    transition:border-color .2s,box-shadow .2s;
+    background:#fdfcfb;
+    color:var(--texto);
+  }
+  input[type="text"]:focus,input[type="date"]:focus{
+    border-color:var(--naranja);
+    box-shadow:0 0 0 3px rgba(232,101,10,.12);
+  }
+
+  /* ── MEDICAMENTOS ── */
+  .meds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:540px){.meds{grid-template-columns:1fr}}
+  .med{
+    background:var(--gris);
+    border:1.5px solid var(--borde);
+    border-radius:12px;
+    padding:12px 14px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    cursor:pointer;
+    transition:border-color .18s,background .18s,box-shadow .18s;
+  }
+  .med:hover{border-color:var(--naranja-claro);background:#fff9f4}
+  .med input[type="checkbox"]{
+    accent-color:var(--naranja);
+    width:17px;height:17px;
+    margin-top:3px;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .med.checked{
+    border-color:var(--naranja);
+    background:#fff5ed;
+    box-shadow:0 0 0 2px rgba(232,101,10,.10);
+  }
+  .med-nombre{font-weight:700;font-size:14px;color:var(--texto)}
+  .med-indic{font-size:12.5px;color:var(--texto-suave);margin-top:2px}
+
+  /* ── BOTONES PRESET ── */
+  .preset-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .btn{
+    border:0;
+    border-radius:999px;
+    font-family:'DM Sans',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:9px 18px;
+    cursor:pointer;
+    transition:transform .12s,box-shadow .12s,opacity .12s;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+  .btn:active{transform:translateY(0)}
+  .btn-primary{background:var(--naranja);color:#fff}
+  .btn-secondary{background:#fff;color:var(--naranja);border:1.5px solid var(--naranja)}
+  .btn-ghost{background:var(--gris);color:var(--texto-suave);border:1.5px solid var(--borde)}
+
+  /* ── LAYOUT DOBLE ── */
+  .layout{display:grid;grid-template-columns:1fr 480px;gap:20px;align-items:start}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+  /* ── PREVISUALIZACIÓN ── */
+  .preview-wrap{position:sticky;top:20px}
+  .preview-label{
+    font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+    color:var(--texto-suave);margin-bottom:8px;padding-left:2px;
+  }
+
+  /* LA RECETA (DOM + impresión) */
+  #presc{
+    width:100%;
+    min-height:520px;
+    background:#fff;
+    border:1px solid var(--borde);
+    border-radius:14px;
+    box-shadow:var(--sombra);
+    padding:22px 24px 28px;
+    display:flex;
+    flex-direction:column;
+  }
+  .presc-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    border-bottom:2.5px solid var(--naranja);
+    padding-bottom:10px;
+    margin-bottom:14px;
+    gap:10px;
+  }
+  .presc-clinic{flex:1}
+  .presc-cliname{
+    font-family:'Playfair Display',serif;
+    font-size:18px;font-weight:800;
+    color:var(--naranja);letter-spacing:.2px;
+  }
+  .presc-sub{font-size:11.5px;color:var(--texto-suave);line-height:1.6;margin-top:2px}
+  .presc-logo img{max-height:44px;object-fit:contain}
+
+  .presc-row{display:flex;gap:18px;margin-bottom:8px;flex-wrap:wrap}
+  .presc-field{flex:1;min-width:140px}
+  .presc-field-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--texto-suave);margin-bottom:2px}
+  .presc-field-val{
+    font-size:14px;font-weight:600;color:var(--texto);
+    border-bottom:1px solid #ccc;
+    padding-bottom:2px;min-width:120px;display:inline-block;
+  }
+  .presc-field-val.empty{color:#ccc;font-weight:400;font-style:italic}
+
+  .rp{
+    font-family:'Playfair Display',serif;
+    font-size:22px;font-weight:800;
+    color:var(--naranja);
+    margin:14px 0 4px;
+  }
+  .indic-label{
+    font-size:11px;font-weight:700;
+    letter-spacing:.6px;text-transform:uppercase;
+    color:var(--naranja);margin-bottom:8px;display:block;
+  }
+  #med_list{list-style:none;padding:0;margin:0}
+  #med_list li{
+    padding:7px 0 7px 14px;
+    border-left:3px solid var(--naranja-claro);
+    margin-bottom:8px;
+  }
+  #med_list li strong{font-size:14px;color:var(--texto)}
+  #med_list li .indicacion{font-size:12.5px;color:var(--texto-suave);margin-top:1px}
+  #med_list .empty-hint{
+    font-size:13px;color:#ccc;font-style:italic;
+    border-left:3px solid #eee;
+    padding:7px 0 7px 14px;
+  }
+
+  .firma{margin-top:auto;padding-top:32px;text-align:center}
+  .firma-linea{width:55%;height:1px;background:#bbb;margin:0 auto 8px}
+  .firma-nombre{font-weight:700;font-size:14px;color:var(--texto)}
+  .firma-sub{font-size:11.5px;color:var(--texto-suave);margin-top:2px}
+
+  /* BARRA IMPRIMIR */
+  .printbar{
+    display:flex;align-items:center;justify-content:flex-end;
+    gap:10px;margin-top:12px;
+  }
+  .print-status{font-size:12px;color:var(--texto-suave)}
+
+  /* ── IMPRESIÓN ── */
+  @page{size:5.5in 8.5in;margin:12mm}
+
+  @media print{
+    body *{visibility:hidden !important}
+    #presc,#presc *{visibility:visible !important}
+    #presc{
+      position:fixed;top:0;left:0;
+      width:5.5in;min-height:8.5in;
+      margin:0;border:0 !important;
+      box-shadow:none !important;
+      border-radius:0 !important;
+      padding:18px 20px 24px;
+    }
+    .presc-logo{display:block !important}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🧮 CLASIFICADOR REMASEP</h1>
 
-  <div class="card">
-    <div class="row space" style="align-items:baseline">
-      <strong>PEGA LA INFORMACIÓN A CLASIFICAR</strong>
-      <div class="row">
-        <button id="btnClassify">Clasificar</button>
-        <button id="btnClearPaste" class="warn">Borrar</button>
-        <!-- <input id="fileInput" type="file" accept=".csv,.xlsx,.xls" /> -->
+<header>
+  <div class="header-brand">
+    <div class="header-title">E-Receta Dental</div>
+    <div class="header-sub">Clínica Sonrisa Ideal</div>
+  </div>
+  <div class="header-logo">
+    <!-- <img src="logo.jpg" alt="Logo"> -->
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+
+    <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+    <div>
+
+      <!-- Datos del paciente -->
+      <div class="card">
+        <div class="card-title">Datos del paciente</div>
+        <div class="controls">
+          <div>
+            <label class="field-label" for="paciente">Nombre completo</label>
+            <input type="text" id="paciente" placeholder="Nombre y apellido">
+          </div>
+          <div>
+            <label class="field-label" for="rut">RUT</label>
+            <input type="text" id="rut" placeholder="Ej: 12.345.678-9">
+          </div>
+          <div>
+            <label class="field-label" for="ciudad">Ciudad</label>
+            <input type="text" id="ciudad" value="Vicuña">
+          </div>
+          <div>
+            <label class="field-label" for="fecha">Fecha</label>
+            <input type="date" id="fecha">
+          </div>
+        </div>
       </div>
-    </div>
-    <textarea id="pasteArea" placeholder="Pega aquí CSV con encabezados (Nombre,Género/Sexo,Edad,Embarazada,Migrante,Cantidad)."></textarea>
-  </div>
 
-  <div id="tableCard" class="card" style="display:none">
-    <div class="row space" style="align-items:baseline">
-      <strong>Resultado</strong>
-      <div class="hint" id="meta"></div>
-    </div>
-    <div id="tableWrap"></div>
+      <!-- Medicamentos -->
+      <div class="card">
+        <div class="card-title">Medicamentos</div>
+        <div class="meds" id="medContainer">
+          <label class="med">
+            <input type="checkbox" class="medCheck" value="Amoxicilina 500 mg — Tomar 1 cápsula cada 8 horas por 7 días.">
+            <div><div class="med-nombre">Amoxicilina 500 mg</div><div class="med-indic">1 cada 8 horas · 7 días</div></div>
+          </label>
+          <label class="med">
+            <input type="checkbox" class="medCheck" value="Meloxicam 15 mg — Tomar 1 comprimido cada 12 horas por 5 días.">
+            <div><div class="med-nombre">Meloxicam 15 mg</div><div class="med-indic">1 cada 12 horas · 5 días</div></div>
+          </label>
+          <label class="med">
+            <input type="checkbox" class="medCheck" value="Clorhexidina 0.12% — Enjuagar 30 segundos después del cepillado, 2 veces al día.">
+            <div><div class="med-nombre">Clorhexidina 0.12%</div><div class="med-indic">Enjuague 2x/día tras cepillado</div></div>
+          </label>
+          <label class="med">
+            <input type="checkbox" class="medCheck" value="Paracetamol 500 mg — Tomar 1 comprimido cada 4 a 6 horas por 5 días.">
+            <div><div class="med-nombre">Paracetamol 500 mg</div><div class="med-indic">1 cada 4–6 horas · 5 días</div></div>
+          </label>
+          <label class="med">
+            <input type="checkbox" class="medCheck" value="Azitromicina 500 mg — Tomar 1 comprimido al día por 3 días.">
+            <div><div class="med-nombre">Azitromicina 500 mg</div><div class="med-indic">1 al día · 3 días</div></div>
+          </label>
+        </div>
 
-    <!-- ⬇️ Botón de descarga DEBAJO del resultado -->
-    <div id="downloadWrap">
-      <button id="btnDownload" class="secondary">Descargar Excel</button>
-    </div>
-  </div>
-</div>
+        <div class="preset-bar">
+          <button class="btn btn-secondary" id="btnFrecuente">Selección frecuente</button>
+          <button class="btn btn-secondary" id="btnAlergico">Alérgicos</button>
+          <button class="btn btn-secondary" id="btnHipertenso">Hipertenso</button>
+          <button class="btn btn-ghost" id="btnLimpiar">Limpiar</button>
+        </div>
+      </div>
+
+    </div><!-- / col izq -->
+
+    <!-- COLUMNA DERECHA: PREVISUALIZACIÓN -->
+    <div class="preview-wrap">
+      <div class="preview-label">Previsualización de receta</div>
+
+      <div class="card" id="presc">
+        <!-- Encabezado -->
+        <div class="presc-head">
+          <div class="presc-clinic">
+            <div class="presc-cliname">Clínica Sonrisa Ideal</div>
+            <div class="presc-sub">
+              RUT: 76.504.084-1<br>
+              Arturo Prat 331, Vicuña
+            </div>
+          </div>
+          <div class="presc-logo">
+            <!-- <img src="logo.jpg" alt="Logo"> -->
+          </div>
+        </div>
+
+        <!-- Fecha y ciudad -->
+        <div class="presc-row">
+          <div class="presc-field">
+            <div class="presc-field-label">Fecha</div>
+            <span class="presc-field-val empty" id="d_out">—</span>
+          </div>
+          <div class="presc-field">
+            <div class="presc-field-label">Ciudad</div>
+            <span class="presc-field-val" id="c_out">Vicuña</span>
+          </div>
+        </div>
+
+        <!-- Paciente -->
+        <div class="presc-row">
+          <div class="presc-field" style="flex:2">
+            <div class="presc-field-label">Nombre del paciente</div>
+            <span class="presc-field-val empty" id="p_out">________________________</span>
+          </div>
+        </div>
+        <div class="presc-row">
+          <div class="presc-field">
+            <div class="presc-field-label">RUT</div>
+            <span class="presc-field-val empty" id="r_out">________________________</span>
+          </div>
+        </div>
+
+        <!-- Medicamentos -->
+        <div class="rp">Rp/</div>
+        <span class="indic-label">Indicación</span>
+        <ul id="med_list">
+          <li class="empty-hint">Marque los medicamentos para agregarlos.</li>
+        </ul>
+
+        <!-- Firma -->
+        <div class="firma">
+          <div class="firma-linea"></div>
+          <div class="firma-nombre">Dr. Edwin Bolaños Díaz</div>
+          <div class="firma-sub">Cirujano Dentista</div>
+          <div class="firma-sub">RUT: 24.133.859-2</div>
+        </div>
+      </div><!-- /#presc -->
+
+      <div class="printbar">
+        <span class="print-status" id="printStatus"></span>
+        <button class="btn btn-primary" id="btnImprimir">🖨 Imprimir receta</button>
+      </div>
+    </div><!-- / col der -->
+
+  </div><!-- /layout -->
+</main>
 
 <script>
-(function(){
-  // const fileInput = document.getElementById('fileInput'); // ELIMINADO
-  const pasteArea = document.getElementById('pasteArea');
-  const btnClassify = document.getElementById('btnClassify');
-  const btnClearPaste = document.getElementById('btnClearPaste');
-  const tableCard = document.getElementById('tableCard');
-  const tableWrap = document.getElementById('tableWrap');
-  const meta = document.getElementById('meta');
-  const btnDownload = document.getElementById('btnDownload');
-  const downloadWrap = document.getElementById('downloadWrap');
+  // ── Fecha por defecto ──
+  const fechaInput = document.getElementById('fecha');
+  const hoy = new Date();
+  // Ajusta a fecha local sin desfase de timezone
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth()+1).padStart(2,'0');
+  const dd = String(hoy.getDate()).padStart(2,'0');
+  fechaInput.value = `${yyyy}-${mm}-${dd}`;
 
-  let lastTable = [];
-
-  const RANGOS = [
-    { nombre:"Menos de 1 año - 1 año", min:0, max:1 },
-    { nombre:"2 años", min:2, max:2 },
-    { nombre:"3 años", min:3, max:3 },
-    { nombre:"4 años", min:4, max:4 },
-    { nombre:"5 años", min:5, max:5 },
-    { nombre:"6 años", min:6, max:6 },
-    { nombre:"7 años", min:7, max:7 },
-    { nombre:"8-9 años", min:8, max:9 },
-    { nombre:"10-14 años", min:10, max:14 },
-    { nombre:"15-19 años", min:15, max:19 },
-    { nombre:"20-24 años", min:20, max:24 },
-    { nombre:"25-34 años", min:25, max:34 },
-    { nombre:"35-44 años", min:35, max:44 },
-    { nombre:"45-59 años", min:45, max:59 },
-    { nombre:"60-64 años", min:60, max:64 },
-    { nombre:"65-74 años", min:65, max:74 },
-    { nombre:"75 y más años", min:75, max:200 }
-  ];
-
-  const stripAccents = s => String(s??'').normalize('NFD').replace(/\p{Diacritic}/gu,'');
-  const norm = s => stripAccents(String(s??'').trim().toLowerCase());
-  const toNum = v => {
-    if (v===null || v===undefined || v==='') return NaN;
-    const n = Number(String(v).replace(/[^\d.-]/g,''));
-    return isNaN(n) ? NaN : n;
-  };
-  const yes = v => {
-    const x = stripAccents(String(v??'').trim().toUpperCase());
-    return x==='SI' || x==='S';
-  };
-  const isMale = v => ["hombre","masculino","male","m"].includes(norm(v));
-  const isFemale = v => ["mujer","femenino","female","f"].includes(norm(v));
-  const findRange = edad => {
-    for (const r of RANGOS) if (edad>=r.min && edad<=r.max) return r.nombre;
-    return null;
-  };
-
-  btnClearPaste.addEventListener('click', ()=>{
-    pasteArea.value = "";
-    tableCard.style.display = 'none';
-    tableWrap.innerHTML = "";
-    downloadWrap.style.display = 'none';
-    meta.textContent = "";
-    // if (fileInput) fileInput.value = ""; // ELIMINADO
-  });
-
-  btnClassify.addEventListener('click', async ()=>{
-    let rows = [];
-    // if (fileInput && fileInput.files.length){ ... } // ELIMINADO
-    // Solo se permite el pegado manual
-    const text = pasteArea.value.trim();
-    const res = Papa.parse(text, {header:true, skipEmptyLines:true});
-    rows = res.data;
-    meta.textContent = `Fuente: Pegado manual (${rows.length} filas)`;
-
-    rows = rows.map(r=>{
-      const o={};
-      for (const [k,v] of Object.entries(r)){
-        const key = norm(k).replace('género','genero');
-        o[key] = v;
-      }
-      if ('sexo' in o && !('genero' in o)) o.genero = o.sexo;
-      return o;
-    });
-
-    const getCol = (...cands) => cands.find(c => c in (rows[0]||{}));
-    const cGenero = getCol('genero','sexo','sex','género') || 'genero';
-    const cEdad   = getCol('edad','age') || 'edad';
-    const cEmbar  = getCol('embarazada','embarazo','gestante') || 'embarazada';
-    const cMigr   = getCol('migrante','migracion') || 'migrante';
-    const cCant   = getCol('cantidad','cant','n','numero','count') || 'cantidad';
-
-    const tabla = {};
-    let excluidosSinEdad = 0;
-
-    for (const r of rows){
-      const genero = r[cGenero];
-      const edad = toNum(r[cEdad]);
-      const embar = yes(r[cEmbar]);
-      const migr  = yes(r[cMigr]);
-      const cant  = Math.max(1, Math.floor(toNum(r[cCant]) || 1));
-
-      if (Number.isNaN(edad)){ excluidosSinEdad += cant; continue; }
-
-      const rango = findRange(edad);
-      if (!rango) continue;
-      if (!tabla[rango]) tabla[rango] = {Hombres:0, Mujeres:0, Embarazadas:0, Migrantes:0};
-
-      if (isMale(genero))  tabla[rango].Hombres += cant;
-      if (isFemale(genero))tabla[rango].Mujeres += cant;
-      if (embar)           tabla[rango].Embarazadas += cant;
-      if (migr)            tabla[rango].Migrantes  += cant;
-    }
-
-    let out = RANGOS.map(r => ({Rango:r.nombre, ...(tabla[r.nombre]||{Hombres:0,Mujeres:0,Embarazadas:0,Migrantes:0})}))
-                    .filter(x => (x.Hombres + x.Mujeres) > 0);
-
-    const sum = out.reduce((a,c)=>({
-      Hombres:a.Hombres+c.Hombres,
-      Mujeres:a.Mujeres+c.Mujeres,
-      Embarazadas:a.Embarazadas+c.Embarazadas,
-      Migrantes:a.Migrantes+c.Migrantes
-    }), {Hombres:0,Mujeres:0,Embarazadas:0,Migrantes:0});
-
-    out.push({Rango:'Total', ...sum});
-    out.push({Rango:'Total Personas', Hombres: sum.Hombres + sum.Mujeres, Mujeres:'', Embarazadas:'', Migrantes:''});
-    lastTable = out;
-
-    tableCard.style.display = 'block';
-    render(out);
-    downloadWrap.style.display = 'block';
-    meta.textContent += ` • Excluidos sin edad: ${excluidosSinEdad}`;
-  });
-
-  function render(rows){
-    let html = `<table id="tablaClasificacion">
-      <thead><tr>
-        <th class="left">Rango de Edad</th>
-        <th>Hombres</th>
-        <th>Mujeres</th>
-        <th>Embarazadas</th>
-        <th>Migrantes</th>
-      </tr></thead><tbody>`;
-    for (const r of rows){
-      const isTot = r.Rango.startsWith('Total');
-      html += `<tr${isTot?' class="tot"':''}>
-        <td class="left">${r.Rango}</td>
-        <td>${r.Hombres ?? 0}</td>
-        <td>${r.Mujeres ?? 0}</td>
-        <td>${r.Embarazadas ?? 0}</td>
-        <td>${r.Migrantes ?? 0}</td>
-      </tr>`;
-    }
-    html += `</tbody></table>`;
-    tableWrap.innerHTML = html;
+  function formatFecha(val){
+    if(!val) return '—';
+    // val = "YYYY-MM-DD"
+    const [y,m,d] = val.split('-').map(Number);
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return `${d} de ${meses[m-1]} de ${y}`;
   }
 
-  btnDownload.addEventListener('click', ()=>{
-    const table = document.getElementById('tablaClasificacion');
-    if(!table) return;
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Clasificación" });
-    XLSX.writeFile(wb, "clasificacion_por_rangos.xlsx");
+  // ── Marcar .checked en labels ──
+  function updateCheckedClass(){
+    document.querySelectorAll('.med').forEach(label=>{
+      const cb = label.querySelector('input[type="checkbox"]');
+      label.classList.toggle('checked', cb.checked);
+    });
+  }
+
+  function cat(nombre){
+    if(nombre.startsWith('Amoxicilina')||nombre.startsWith('Azitromicina')) return 1;
+    if(nombre.startsWith('Paracetamol')||nombre.startsWith('Meloxicam')) return 2;
+    if(nombre.startsWith('Clorhexidina')) return 3;
+    return 4;
+  }
+
+  function render(){
+    const paciente = document.getElementById('paciente').value.trim();
+    const rut      = document.getElementById('rut').value.trim();
+    const ciudad   = document.getElementById('ciudad').value.trim() || 'Vicuña';
+    const fechaVal = fechaInput.value;
+
+    const pOut = document.getElementById('p_out');
+    const rOut = document.getElementById('r_out');
+    const cOut = document.getElementById('c_out');
+    const dOut = document.getElementById('d_out');
+
+    pOut.textContent = paciente || '________________________';
+    pOut.classList.toggle('empty', !paciente);
+
+    rOut.textContent = rut || '________________________';
+    rOut.classList.toggle('empty', !rut);
+
+    cOut.textContent = ciudad;
+    dOut.textContent = formatFecha(fechaVal);
+    dOut.classList.toggle('empty', !fechaVal);
+
+    const checked = Array.from(document.querySelectorAll('.medCheck:checked'));
+    const ul = document.getElementById('med_list');
+    ul.innerHTML = '';
+    if(checked.length === 0){
+      const li = document.createElement('li');
+      li.className = 'empty-hint';
+      li.textContent = 'Marque los medicamentos para agregarlos.';
+      ul.appendChild(li);
+    } else {
+      const parsed = checked.map(cb=>{
+        const parts = cb.value.split(' — ');
+        return { nombre: parts[0], indic: parts.slice(1).join(' — ') };
+      });
+      parsed.sort((a,b) => cat(a.nombre) - cat(b.nombre));
+      parsed.forEach(item=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${item.nombre}</strong>${item.indic ? `<div class="indicacion">${item.indic}</div>` : ''}`;
+        ul.appendChild(li);
+      });
+    }
+
+    updateCheckedClass();
+  }
+
+  // Listeners
+  ['paciente','rut','ciudad','fecha'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', render);
   });
-})();
+  document.getElementById('medContainer').addEventListener('change', render);
+
+  function setPreset(nombres){
+    document.querySelectorAll('.medCheck').forEach(cb=>{
+      cb.checked = nombres.includes(cb.value.split(' — ')[0]);
+    });
+    render();
+  }
+
+  document.getElementById('btnFrecuente').onclick = ()=> setPreset(['Amoxicilina 500 mg','Meloxicam 15 mg','Clorhexidina 0.12%']);
+  document.getElementById('btnAlergico').onclick  = ()=> setPreset(['Azitromicina 500 mg','Meloxicam 15 mg','Clorhexidina 0.12%']);
+  document.getElementById('btnHipertenso').onclick= ()=> setPreset(['Amoxicilina 500 mg','Paracetamol 500 mg','Clorhexidina 0.12%']);
+  document.getElementById('btnLimpiar').onclick   = ()=>{ document.querySelectorAll('.medCheck').forEach(c=>c.checked=false); render(); };
+
+  // ── Impresión ──
+  function printReceta(){
+    const btn = document.getElementById('btnImprimir');
+    const st  = document.getElementById('printStatus');
+    btn.disabled = true;
+    btn.textContent = 'Imprimiendo…';
+    st.textContent = '';
+    window.print();
+  }
+  function afterPrint(){
+    const btn = document.getElementById('btnImprimir');
+    const st  = document.getElementById('printStatus');
+    btn.disabled = false;
+    btn.textContent = '🖨 Imprimir receta';
+    const now = new Date();
+    st.textContent = `Último envío: ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
+
+  document.getElementById('btnImprimir').onclick = printReceta;
+  window.addEventListener('afterprint', afterPrint);
+
+  // Render inicial
+  render();
 </script>
 </body>
 </html>
