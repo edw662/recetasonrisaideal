@@ -104,6 +104,38 @@
     box-shadow:0 0 0 3px rgba(232,101,10,.12);
   }
 
+  /* ── CONDICIONES DEL PACIENTE ── */
+  .cond-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .cond-btn{
+    border:1.5px solid var(--borde);
+    border-radius:999px;
+    background:var(--gris);
+    padding:8px 16px;
+    font-family:'DM Sans',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:var(--texto-suave);
+    cursor:pointer;
+    transition:all .18s;
+  }
+  .cond-btn:hover{border-color:#fca5a5;color:#dc2626}
+  .cond-btn.active{
+    background:#fee2e2;
+    border-color:#ef4444;
+    color:#dc2626;
+  }
+  .alert-box{
+    display:none;
+    padding:10px 14px;
+    border-radius:10px;
+    background:#fff7ed;
+    border-left:3px solid var(--naranja);
+    font-size:13px;
+    color:var(--texto);
+    line-height:1.7;
+  }
+  .alert-box.visible{display:block}
+
   /* ── MEDICAMENTOS ── */
   .meds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   @media(max-width:540px){.meds{grid-template-columns:1fr}}
@@ -130,6 +162,30 @@
     border-color:var(--naranja);
     background:#fff5ed;
     box-shadow:0 0 0 2px rgba(232,101,10,.10);
+  }
+  /* Contraindicado: bloqueado */
+  .med.contraindicated{
+    opacity:.45;
+    border-color:#fca5a5 !important;
+    background:#fff5f5 !important;
+    pointer-events:none;
+    box-shadow:none !important;
+  }
+  .med.contraindicated .med-nombre::after{
+    content:' — CONTRAINDICADO';
+    font-size:11px;
+    font-weight:700;
+    color:#dc2626;
+  }
+  /* Advertencia: seleccionable pero con aviso */
+  .med.warn-cond{
+    border-color:#fbbf24 !important;
+    background:#fffbeb !important;
+  }
+  .med.warn-cond .med-indic::after{
+    content:' ⚠ usar con precaución';
+    color:#b45309;
+    font-style:italic;
   }
   .med-nombre{font-weight:700;font-size:14px;color:var(--texto)}
   .med-indic{font-size:12.5px;color:var(--texto-suave);margin-top:2px}
@@ -299,31 +355,42 @@
         </div>
       </div>
 
+      <!-- Condiciones del paciente -->
+      <div class="card">
+        <div class="card-title">Condiciones del paciente</div>
+        <div class="cond-bar">
+          <button class="cond-btn" data-cond="alergico">Alérgico a penicilina</button>
+          <button class="cond-btn" data-cond="hipertenso">Hipertenso</button>
+          <button class="cond-btn" data-cond="diabetico">Diabético</button>
+        </div>
+        <div class="alert-box" id="alertBox"></div>
+      </div>
+
       <!-- Medicamentos -->
       <div class="card">
         <div class="card-title">Medicamentos</div>
         <div class="meds" id="medContainer">
-          <label class="med">
+          <label class="med" data-nombre="Amoxicilina 500 mg">
             <input type="checkbox" class="medCheck" value="Amoxicilina 500 mg — Tomar 1 cápsula cada 8 horas por 7 días.">
             <div><div class="med-nombre">Amoxicilina 500 mg</div><div class="med-indic">1 cada 8 horas · 7 días</div></div>
           </label>
-          <label class="med">
+          <label class="med" data-nombre="Meloxicam 15 mg">
             <input type="checkbox" class="medCheck" value="Meloxicam 15 mg — Tomar 1 comprimido cada 12 horas por 5 días.">
             <div><div class="med-nombre">Meloxicam 15 mg</div><div class="med-indic">1 cada 12 horas · 5 días</div></div>
           </label>
-          <label class="med">
+          <label class="med" data-nombre="Clorhexidina 0.12%">
             <input type="checkbox" class="medCheck" value="Clorhexidina 0.12% — Enjuagar 30 segundos después del cepillado, 2 veces al día.">
             <div><div class="med-nombre">Clorhexidina 0.12%</div><div class="med-indic">Enjuague 2x/día tras cepillado</div></div>
           </label>
-          <label class="med">
+          <label class="med" data-nombre="Paracetamol 500 mg">
             <input type="checkbox" class="medCheck" value="Paracetamol 500 mg — Tomar 1 comprimido cada 4 a 6 horas por 5 días.">
             <div><div class="med-nombre">Paracetamol 500 mg</div><div class="med-indic">1 cada 4–6 horas · 5 días</div></div>
           </label>
-          <label class="med">
+          <label class="med" data-nombre="Azitromicina 500 mg">
             <input type="checkbox" class="medCheck" value="Azitromicina 500 mg — Tomar 1 comprimido al día por 3 días.">
             <div><div class="med-nombre">Azitromicina 500 mg</div><div class="med-indic">1 al día · 3 días</div></div>
           </label>
-          <label class="med">
+          <label class="med" data-nombre="Ketorolaco trometamol 30 mg">
             <input type="checkbox" class="medCheck" value="Ketorolaco trometamol 30 mg — Tomar 1 comprimido sublingual al día por 2 días.">
             <div><div class="med-nombre">Ketorolaco trometamol 30 mg</div><div class="med-indic">1 sublingual al día · 2 días</div></div>
           </label>
@@ -333,6 +400,7 @@
           <button class="btn btn-secondary" id="btnFrecuente">Selección frecuente</button>
           <button class="btn btn-secondary" id="btnAlergico">Alérgicos</button>
           <button class="btn btn-secondary" id="btnHipertenso">Hipertenso</button>
+          <button class="btn btn-secondary" id="btnDiabetico">Diabético</button>
           <button class="btn btn-ghost" id="btnLimpiar">Limpiar</button>
         </div>
       </div>
@@ -413,7 +481,6 @@
   // ── Fecha por defecto ──
   const fechaInput = document.getElementById('fecha');
   const hoy = new Date();
-  // Ajusta a fecha local sin desfase de timezone
   const yyyy = hoy.getFullYear();
   const mm = String(hoy.getMonth()+1).padStart(2,'0');
   const dd = String(hoy.getDate()).padStart(2,'0');
@@ -421,17 +488,90 @@
 
   function formatFecha(val){
     if(!val) return '—';
-    // val = "YYYY-MM-DD"
     const [y,m,d] = val.split('-').map(Number);
     const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
     return `${d} de ${meses[m-1]} de ${y}`;
   }
 
+  // ── Estado de condiciones activas ──
+  const condiciones = { alergico: false, hipertenso: false, diabetico: false };
+
+  // Reglas de contraindicación y advertencia por condición
+  const REGLAS = {
+    alergico: {
+      contraindica: ['Amoxicilina 500 mg'],
+      advierte:     [],
+      mensaje: '⚠️ <strong>Alérgico a penicilina:</strong> Amoxicilina contraindicada. Los presets la sustituyen automáticamente por Azitromicina.'
+    },
+    hipertenso: {
+      contraindica: [],
+      advierte:     ['Meloxicam 15 mg','Ketorolaco trometamol 30 mg'],
+      mensaje: '⚠️ <strong>Hipertenso:</strong> Meloxicam y Ketorolaco pueden elevar la presión arterial. Se recomienda Paracetamol.'
+    },
+    diabetico: {
+      contraindica: [],
+      advierte:     ['Meloxicam 15 mg','Ketorolaco trometamol 30 mg'],
+      mensaje: '⚠️ <strong>Diabético:</strong> Meloxicam y Ketorolaco pueden afectar la función renal. Se recomienda Paracetamol.'
+    }
+  };
+
+  // ── Aplicar condiciones a los medicamentos ──
+  function applyConditions(){
+    const contraindica = new Set();
+    const advierte     = new Set();
+
+    Object.entries(condiciones).forEach(([cond, activa])=>{
+      if(!activa) return;
+      REGLAS[cond].contraindica.forEach(n => contraindica.add(n));
+      REGLAS[cond].advierte.forEach(n => advierte.add(n));
+    });
+
+    document.querySelectorAll('.med').forEach(label=>{
+      const nombre = label.dataset.nombre;
+      const cb = label.querySelector('input[type="checkbox"]');
+      label.classList.remove('contraindicated','warn-cond');
+      cb.disabled = false;
+
+      if(contraindica.has(nombre)){
+        label.classList.add('contraindicated');
+        cb.checked  = false;
+        cb.disabled = true;
+      } else if(advierte.has(nombre)){
+        label.classList.add('warn-cond');
+      }
+    });
+
+    // Mostrar alertas
+    const alertBox = document.getElementById('alertBox');
+    const msgs = Object.entries(condiciones)
+      .filter(([,activa])=>activa)
+      .map(([cond])=> REGLAS[cond].mensaje);
+
+    if(msgs.length){
+      alertBox.innerHTML = msgs.join('<br>');
+      alertBox.classList.add('visible');
+    } else {
+      alertBox.classList.remove('visible');
+    }
+
+    render();
+  }
+
+  // Alternar condición al hacer clic
+  document.querySelectorAll('.cond-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const cond = btn.dataset.cond;
+      condiciones[cond] = !condiciones[cond];
+      btn.classList.toggle('active', condiciones[cond]);
+      applyConditions();
+    });
+  });
+
   // ── Marcar .checked en labels ──
   function updateCheckedClass(){
     document.querySelectorAll('.med').forEach(label=>{
       const cb = label.querySelector('input[type="checkbox"]');
-      label.classList.toggle('checked', cb.checked);
+      label.classList.toggle('checked', cb.checked && !label.classList.contains('contraindicated'));
     });
   }
 
@@ -455,10 +595,8 @@
 
     pOut.textContent = paciente || '________________________';
     pOut.classList.toggle('empty', !paciente);
-
     rOut.textContent = rut || '________________________';
     rOut.classList.toggle('empty', !rut);
-
     cOut.textContent = ciudad;
     dOut.textContent = formatFecha(fechaVal);
     dOut.classList.toggle('empty', !fechaVal);
@@ -487,15 +625,24 @@
     updateCheckedClass();
   }
 
-  // Listeners
+  // Listeners campos
   ['paciente','rut','ciudad','fecha'].forEach(id=>{
     document.getElementById(id).addEventListener('input', render);
   });
   document.getElementById('medContainer').addEventListener('change', render);
 
+  // ── Presets inteligentes (respetan condiciones activas) ──
   function setPreset(nombres){
+    const resueltos = nombres.map(n=>{
+      if(condiciones.alergico && n === 'Amoxicilina 500 mg') return 'Azitromicina 500 mg';
+      if((condiciones.hipertenso || condiciones.diabetico) &&
+         (n === 'Meloxicam 15 mg' || n === 'Ketorolaco trometamol 30 mg')) return 'Paracetamol 500 mg';
+      return n;
+    });
+
     document.querySelectorAll('.medCheck').forEach(cb=>{
-      cb.checked = nombres.includes(cb.value.split(' — ')[0]);
+      const nombre = cb.value.split(' — ')[0];
+      cb.checked = !cb.disabled && resueltos.includes(nombre);
     });
     render();
   }
@@ -503,6 +650,7 @@
   document.getElementById('btnFrecuente').onclick = ()=> setPreset(['Amoxicilina 500 mg','Meloxicam 15 mg','Clorhexidina 0.12%']);
   document.getElementById('btnAlergico').onclick  = ()=> setPreset(['Azitromicina 500 mg','Meloxicam 15 mg','Clorhexidina 0.12%']);
   document.getElementById('btnHipertenso').onclick= ()=> setPreset(['Amoxicilina 500 mg','Paracetamol 500 mg','Clorhexidina 0.12%']);
+  document.getElementById('btnDiabetico').onclick = ()=> setPreset(['Amoxicilina 500 mg','Paracetamol 500 mg','Clorhexidina 0.12%']);
   document.getElementById('btnLimpiar').onclick   = ()=>{ document.querySelectorAll('.medCheck').forEach(c=>c.checked=false); render(); };
 
   // ── Impresión ──
