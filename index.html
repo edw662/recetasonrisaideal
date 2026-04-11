@@ -362,6 +362,7 @@
           <button class="cond-btn" data-cond="alergico">Alérgico a penicilina</button>
           <button class="cond-btn" data-cond="hipertenso">Hipertenso</button>
           <button class="cond-btn" data-cond="diabetico">Diabético</button>
+          <button class="cond-btn" data-cond="renal">Insuf. renal</button>
         </div>
         <div class="alert-box" id="alertBox"></div>
       </div>
@@ -401,6 +402,7 @@
           <button class="btn btn-secondary" id="btnAlergico">Alérgicos</button>
           <button class="btn btn-secondary" id="btnHipertenso">Hipertenso</button>
           <button class="btn btn-secondary" id="btnDiabetico">Diabético</button>
+          <button class="btn btn-secondary" id="btnRenal">Insuf. renal</button>
           <button class="btn btn-ghost" id="btnLimpiar">Limpiar</button>
         </div>
       </div>
@@ -494,7 +496,7 @@
   }
 
   // ── Estado de condiciones activas ──
-  const condiciones = { alergico: false, hipertenso: false, diabetico: false };
+  const condiciones = { alergico: false, hipertenso: false, diabetico: false, renal: false };
 
   // Reglas de contraindicación y advertencia por condición
   const REGLAS = {
@@ -512,6 +514,11 @@
       contraindica: [],
       advierte:     ['Meloxicam 15 mg','Ketorolaco trometamol 30 mg'],
       mensaje: '⚠️ <strong>Diabético:</strong> Meloxicam y Ketorolaco pueden afectar la función renal. Se recomienda Paracetamol.'
+    },
+    renal: {
+      contraindica: ['Meloxicam 15 mg','Ketorolaco trometamol 30 mg'],
+      advierte:     [],
+      mensaje: '⚠️ <strong>Insuficiencia renal:</strong> AINEs (Meloxicam, Ketorolaco) contraindicados — reducen el flujo renal. Use Paracetamol.'
     }
   };
 
@@ -653,6 +660,7 @@
   document.getElementById('btnAlergico').onclick  = ()=> setPreset(['Azitromicina 500 mg','Meloxicam 15 mg','Clorhexidina 0.12%']);
   document.getElementById('btnHipertenso').onclick= ()=> setPreset(['Amoxicilina 500 mg','Paracetamol 500 mg','Clorhexidina 0.12%']);
   document.getElementById('btnDiabetico').onclick = ()=> setPreset(['Amoxicilina 500 mg','Paracetamol 500 mg','Clorhexidina 0.12%']);
+  document.getElementById('btnRenal').onclick     = ()=> setPreset(['Amoxicilina 500 mg','Paracetamol 500 mg','Clorhexidina 0.12%']);
   document.getElementById('btnLimpiar').onclick   = ()=>{ document.querySelectorAll('.medCheck').forEach(c=>c.checked=false); render(); };
 
   // ── Impresión ──
